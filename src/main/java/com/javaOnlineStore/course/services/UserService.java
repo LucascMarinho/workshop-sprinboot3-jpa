@@ -5,11 +5,11 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.javaOnlineStore.course.entities.User;
 import com.javaOnlineStore.course.repositories.UserRepository;
+import com.javaOnlineStore.course.services.exceptions.DatabaseException;
 import com.javaOnlineStore.course.services.exceptions.ResourceNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -35,11 +35,14 @@ public class UserService {
 
 	public void delete(Long id) {
 		try {
-			repository.deleteById(id);
-		} catch (EmptyResultDataAccessException e) {
-			throw new ResourceNotFoundException(id);
+			Optional<User> obj = repository.findById(id);
+			if(obj.isEmpty() == true) {
+				throw new ResourceNotFoundException(id);	
+			} else {
+				repository.deleteById(id);
+			}			
 		} catch (DataIntegrityViolationException e) {
-			e.getMessage();
+			throw new DatabaseException(e.getMessage());
 		}
 
 	}
